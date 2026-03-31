@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Exclusivo de Firma Digital - Presidencia de Chile</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0033A0;
+            --primary-red: #D50000;
+            --gold: #FFD700;
+            --white: #FFFFFF;
+            --dark: #1a1a1a;
+            --gray-light: #f4f6f9;
+            --gray-text: #555;
+            --success: #2e7d32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-light);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* Header Principal */
+        .header-gob {
+            background: linear-gradient(90deg, var(--primary-blue) 0%, #002060 100%);
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .escudo-svg {
+            width: 50px;
+            height: 60px;
+            fill: var(--white);
+        }
+
+        .header-titles h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header-titles p {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .status-bar {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        /* Layout Principal */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .security-sidebar {
+            background: var(--white);
+            padding: 2rem;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .user-profile {
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            border: 3px solid var(--primary-red);
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--dark);
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--primary-red);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .security-checks {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--gray-light);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .check-icon {
+            color: var(--primary-blue);
+        }
+
+        /* Área de Contenido */
+        .content-area {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-blue);
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        /* Documento */
+        .document-container {
+            background: var(--white);
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            padding: 4rem;
+            transition: all 0.3s ease;
+            min-height: 600px;
+        }
+
+        .document-header-doc {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px double var(--dark);
+        }
+
+        .doc-content {
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 3rem;
+        }
+
+        .signature-zone {
+            margin-top: 4rem;
+            min-height: 150px;
+            position: relative;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* Sello Digital */
+        .digital-stamp {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 200px;
+            height: 150px;
+            border: 3px solid var(--primary-red);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(255,255,255,0.9);
+            z-index: 10;
+        }
+
+        .stamp-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .stamp-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: var(--primary-blue);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .stamp-rut {
+            font-weight: bold;
+            color: var(--primary-blue);
+            font-size: 0.9rem;
+        }
+
+        .stamp-name {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .stamp-date {
+            font-size: 0.7rem;
+            color: var(--gray-text);
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Panel de Control */
+        .control-panel {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            border-left: 5px solid var(--primary-blue);
+        }
+
+        .info-text {
+            font-size: 0.9rem;
+            color: var(--gray-text);
+        }
+
+        .btn-sign {
+            background: linear-gradient(45deg, var(--primary-red) 0%, #b71c1c 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(213, 0, 0, 0.2);
+        }
+
+        .btn-sign:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(213, 0, 0, 0.3);
+        }
+
+        .btn-sign:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Modal */
+        .process-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border-top: 10px solid var(--primary-blue);
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .process-steps {
+            text-align: left;
+            margin-top: 20px;
+            list-style: none;
+        }
+
+        .process-steps li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .process-steps li.active {
+            opacity: 1;
+            font-weight: bold;
+            color: var(--primary-blue);
+        }
+
+        .process-steps li::before {
+            content: '●';
+            position: absolute;
+            left: 0;
+            color: #ccc;
+        }
+
+        .process-steps li.active::before {
+            color: var(--primary-blue);
+        }
+
+        /* CORRECCIÓN: Overlay de bloqueo como div real (no ::after) */
+        .locked-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.8),
+                rgba(255, 255, 255, 0.8) 10px,
+                rgba(240, 240, 240, 0.8) 10px,
+                rgba(240, 240, 240, 0.8) 20px
+            );
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            font-weight: bold;
+            letter-spacing: 2px;
+            border: 5px solid var(--primary-blue);
+            z-index: 5;
+            pointer-events: none;
+            border-radius: 4px;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .locked-overlay.visible {
+            display: flex;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .security-sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header-gob">
+        <div class="logo-container">
+            <!-- CORRECCIÓN: SVG limpio sin imagen base64 vacía -->
+            <svg class="escudo-svg" viewBox="0 0 100 120">
+                <path d="M50 10 L90 40 L90 90 Q50 120 10 90 L10 40 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                <text x="50" y="25" text-anchor="middle" font-size="10" fill="currentColor">REPÚBLICA</text>
+                <text x="50" y="38" text-anchor="middle" font-size="10" fill="currentColor">DE CHILE</text>
+                <rect x="35" y="50" width="30" height="15" fill="#D50000"/>
+                <polygon points="50,52 53,58 50,64 47,58" fill="#FFD700"/>
+            </svg>
+            <div class="header-titles">
+                <h1>SISTEMA EXCLUSIVO DE FIRMA DIGITAL</h1>
+                <p>Presidencia de la República de Chile</p>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="status-dot"></div>
+            <span>CONEXIÓN SEGURA ACTIVA</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="security-sidebar">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="user-name">Gabriel Boric Font</div>
+                <div class="user-role">Presidente de la República</div>
+            </div>
+
+            <div class="security-info">
+                <h3><i class="fas fa-shield-alt"></i> Seguridad del Sistema</h3>
+                <p style="font-size: 0.85rem; margin: 15px 0; color: var(--gray-text);">
+                    Este sistema utiliza encriptación de nivel militar y verificación biométrica para evitar falsificaciones.
+                </p>
+                <div class="security-checks">
+                    <div class="check-item">
+                        <i class="fas fa-fingerprint check-icon"></i>
+                        <span>Verificación Biométrica</span>
+                    </div>
+                    <div class="check-item">
+                        <i class="fas fa-key check-icon"></i>
+                        <span>Token Criptográfico</span>
+                    </div>
+                    <div class="check-item">
+                        <i class="fas fa-lock check-icon"></i>
+                        <span>Bloqueo Automático</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: auto; font-size: 0.7rem; color: #999;">
+                <i class="fas fa-copyright"></i> Gobierno de Chile - Módulo de Firma Digital v4.2.1
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <div>
+                <h2 class="section-title"><i class="fas fa-file-signature"></i> Documento Oficial Pendiente</h2>
+                
+                <div id="document-box" class="document-container">
+
+                    <!-- CORRECCIÓN: overlay div real para el bloqueo -->
+                    <div class="locked-overlay" id="locked-overlay">
+                        DOCUMENTO BLOQUEADO Y FIRMADO
+                    </div>
+
+                    <div class="document-header-doc">
+                        <h3>DECRETO SUPREMO Nº 0021</h3>
+                        <!-- CORRECCIÓN: fecha dinámica generada por JS -->
+                        <p style="font-size: 0.9rem; color: #666;" id="doc-fecha"></p>
+                    </div>
+                    
+                    <div class="doc-content">
+                        <p><strong>MATERIA:</strong> Promulgación de Ley sobre Protección de Datos Personales en el Sector Público.</p>
+                        <br>
+                        <p>Vistos: Lo dispuesto en el artículo 32 número 3 de la Constitución Política de la República; la ley Nº 19.880, que establece bases de los procedimientos administrativos...</p>
+                        <br>
+                        <p>Decreto:</p>
+                        <p>Artículo único.- Promúlgase y publíquese en el Diario Oficial la ley sobre protección de datos personales, cuyo texto adjunto forma parte integrante de este decreto.</p>
+                        <br>
+                        <p>Anótese, tómese razón y publíquese.- Por orden del Presidente de la República.</p>
+                    </div>
+
+                    <div class="signature-zone" id="sig-zone">
+                        <div class="digital-stamp" id="digital-stamp">
+                            <i class="fas fa-shield-alt stamp-watermark"></i>
+                            <span class="stamp-rut">RUT: 10.548.394-6</span>
+                            <span class="stamp-name">Gabriel Boric Font</span>
+                            <span class="stamp-name" style="color: var(--primary-red); font-size: 0.6rem;">PRESIDENTE DE LA REPÚBLICA</span>
+                            <div style="width: 80px; height: 2px; background: var(--primary-blue); margin: 5px 0;"></div>
+                            <span class="stamp-date" id="stamp-datetime"></span>
+                            <div style="font-size: 0.6rem; color: green; margin-top: 5px;">
+                                <i class="fas fa-check-circle"></i> VÁLIDO
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div>
+                    <h3>Control Total del Mandatario</h3>
+                    <p class="info-text">Al firmar, el documento quedará bloqueado y registrado en el Sistema de Registro Nacional. Esta acción es inalterable.</p>
+                </div>
+                <button class="btn-sign" id="btn-firmar" onclick="iniciarProcesoFirma()">
+                    <i class="fas fa-signature"></i> Firmar Digitalmente
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="process-modal" id="process-modal">
+        <div class="modal-content-box">
+            <div class="loader"></div>
+            <h2>PROCESO DE FIRMA DIGITAL</h2>
+            <p style="margin-top: 10px; color: #666;">Verificando seguridad y autenticidad...</p>
+            <ul class="process-steps">
+                <li id="step1">Verificando identidad biométrica</li>
+                <li id="step2">Generando hash criptográfico único</li>
+                <li id="step3">Aplicando Escudo Nacional y RUT</li>
+                <li id="step4">Bloqueando documento para edición</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // CORRECCIÓN: Fecha dinámica al cargar la página
+        function formatearFecha(date) {
+            const meses = [
+                'enero','febrero','marzo','abril','mayo','junio',
+                'julio','agosto','septiembre','octubre','noviembre','diciembre'
+            ];
+            const dia = date.getDate();
+            const mes = meses[date.getMonth()];
+            const anio = date.getFullYear();
+            return `Santiago, ${dia} de ${mes} de ${anio}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ahora = new Date();
+            document.getElementById('doc-fecha').textContent = formatearFecha(ahora);
+        });
+
+        function iniciarProcesoFirma() {
+            const modal = document.getElementById('process-modal');
+            const btnFirmar = document.getElementById('btn-firmar');
+
+            modal.classList.add('modal-active');
+            btnFirmar.disabled = true;
+            btnFirmar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Firmando...';
+
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            let currentStep = 0;
+
+            const interval = setInterval(() => {
+                if (currentStep > 0) {
+                    document.getElementById(steps[currentStep - 1]).classList.remove('active');
+                }
+                if (currentStep < steps.length) {
+                    document.getElementById(steps[currentStep]).classList.add('active');
+                    currentStep++;
+                } else {
+                    clearInterval(interval);
+                    finalizarFirma();
+                }
+            }, 800);
+        }
+
+        function finalizarFirma() {
+            const modal = document.getElementById('process-modal');
+            const stamp = document.getElementById('digital-stamp');
+            const btnFirmar = document.getElementById('btn-firmar');
+            const lockedOverlay = document.getElementById('locked-overlay');
+
+            setTimeout(() => {
+                modal.classList.remove('modal-active');
+
+                // Mostrar sello digital
+                stamp.classList.add('stamp-visible');
+
+                // CORRECCIÓN: Fecha y hora real en el sello
+                const now = new Date();
+                document.getElementById('stamp-datetime').innerText =
+                    now.toISOString().slice(0, 19).replace('T', ' ');
+
+                // CORRECCIÓN: Activar overlay div real
+                lockedOverlay.classList.add('visible');
+
+                btnFirmar.innerHTML = '<i class="fas fa-lock"></i> Documento Firmado y Bloqueado';
+                btnFirmar.style.background = '#ccc';
+
+                alert('✅ Documento firmado exitosamente.\nEstado: BLOQUEADO\nRegistro: Archivo Nacional de Chile.');
+            }, 500);
+        }
+    </script>
+</body>
+</html>

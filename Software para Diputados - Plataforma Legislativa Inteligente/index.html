@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leyes360 - Plataforma Legislativa Inteligente</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #0277bd;
+            --accent: #f57f17;
+            --danger: #b71c1c;
+            --success: #2e7d32;
+            --light: #f8f9fa;
+            --dark: #263238;
+            --white: #ffffff;
+            --gray: #78909c;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+
+        .logo-area {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo-icon {
+            font-size: 2.8rem;
+            color: var(--accent);
+            filter: drop-shadow(0 0 5px rgba(245, 127, 23, 0.4));
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 1.5rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+        }
+
+        .nav-item.active {
+            border-left-color: var(--accent);
+        }
+
+        .nav-item i {
+            width: 30px;
+            font-size: 1.2rem;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--white);
+            padding: 1rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: #f0f2f5;
+        }
+
+        .view-section {
+            display: none;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .view-section.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- CARDS & STATS --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--secondary);
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.8rem;
+        }
+
+        /* --- COMPONENTS --- */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #0d1642; transform: translateY(-2px); }
+
+        .analysis-result {
+            background: #e3f2fd;
+            border: 1px solid var(--secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        /* --- CHAT --- */
+        .chat-container {
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message-bubble {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 85%;
+            margin-bottom: 1rem;
+        }
+
+        .chat-input-area {
+            padding: 1rem;
+            background: white;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .sidebar { width: 80px; }
+            .logo-text, .logo-subtext, .nav-item span { display: none; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo-area">
+            <i class="fas fa-landmark logo-icon"></i>
+            <div class="logo-text">LEYES360</div>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="showView('dashboard')">
+                <i class="fas fa-chart-line"></i> <span>Panel de Control</span>
+            </div>
+            <div class="nav-item" onclick="showView('analisis')">
+                <i class="fas fa-microchip"></i> <span>IA Legislativa</span>
+            </div>
+            <div class="nav-item" onclick="showView('debate')">
+                <i class="fas fa-users-cog"></i> <span>Mesa de Debate</span>
+            </div>
+            <div class="nav-item" onclick="showView('agenda')">
+                <i class="fas fa-calendar-check"></i> <span>Agenda Global</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <header class="header">
+            <div>
+                <h3 id="view-title">Dashboard Operativo</h3>
+                <small style="color: var(--gray)">ID de Sesión: #45-2026</small>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="text-align: right">
+                    <p style="font-weight: 700; font-size: 0.9rem">Dip. Juan Pérez</p>
+                    <small style="color: var(--success)"><i class="fas fa-circle"></i> En Línea</small>
+                </div>
+                <div style="width: 45px; height: 45px; background: var(--primary); color: white; border-radius: 50%; display: grid; place-items: center; font-weight: 800;">JP</div>
+            </div>
+        </header>
+
+        <main class="content-area">
+            
+            <section id="dashboard" class="view-section active">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div>
+                            <h2 style="color: var(--success)">$12.5M</h2>
+                            <p style="font-size: 0.8rem; color: var(--gray)">Optimización de Recursos</p>
+                        </div>
+                        <i class="fas fa-vault fa-2x" style="color: var(--success); opacity: 0.3"></i>
+                    </div>
+                    <div class="stat-box" style="border-bottom-color: var(--accent)">
+                        <div>
+                            <h2 style="color: var(--accent)">78%</h2>
+                            <p style="font-size: 0.8rem; color: var(--gray)">Viabilidad Promedio</p>
+                        </div>
+                        <i class="fas fa-bolt fa-2x" style="color: var(--accent); opacity: 0.3"></i>
+                    </div>
+                    <div class="stat-box" style="border-bottom-color: var(--primary)">
+                        <div>
+                            <h2 style="color: var(--primary)">342</h2>
+                            <p style="font-size: 0.8rem; color: var(--gray)">Informes Generados</p>
+                        </div>
+                        <i class="fas fa-file-contract fa-2x" style="color: var(--primary); opacity: 0.3"></i>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-history"></i> Flujo de Trabajo Reciente</div>
+                    <ul style="list-style: none;">
+                        <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-check text-success"></i> Proyecto Educación 2.0 Analizado</span>
+                            <small>Hace 5 min</small>
+                        </li>
+                        <li style="padding: 10px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-clock text-accent"></i> Sesión Ordinaria inicia en 20 min</span>
+                            <small>Programado</small>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="analisis" class="view-section">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-robot"></i> Análisis de Impacto con IA</div>
+                    <p style="margin-bottom: 1rem; font-size: 0.9rem;">Inserte el borrador de la propuesta para un escaneo de riesgos y beneficios fiscales.</p>
+                    <textarea id="ia-input" style="width: 100%; height: 150px; padding: 15px; border-radius: 8px; border: 1px solid #ddd; resize: none;" placeholder="Ej: Ley de fomento a la tecnología regional..."></textarea>
+                    <button class="btn btn-primary" style="margin-top: 1rem" onclick="runIA()">
+                        <i class="fas fa-brain"></i> Procesar con Red Neuronal
+                    </button>
+
+                    <div id="ia-result" class="analysis-result">
+                        </div>
+                </div>
+            </section>
+
+            <section id="debate" class="view-section">
+                <div class="card" style="padding: 0;">
+                    <div class="chat-container">
+                        <div style="background: var(--primary); color: white; padding: 15px; font-weight: 700;">
+                            Sala de Coordinación Estratégica
+                        </div>
+                        <div class="chat-messages" id="chat-box">
+                            <div class="message-bubble">
+                                <small style="color: var(--secondary); font-weight: 700;">Sistema</small>
+                                <p>Bienvenido al canal seguro de debate. Todos los argumentos son registrados con sello de tiempo.</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="msg-input" class="chat-input" placeholder="Escriba su argumento...">
+                            <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="agenda" class="view-section">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-calendar-alt"></i> Compromisos de Hoy</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="background: #fff8e1; border-left: 5px solid var(--accent); padding: 15px; border-radius: 4px;">
+                            <strong>11:30 AM</strong> - Votación General Presupuesto 2026
+                        </div>
+                        <div style="background: #e8f5e9; border-left: 5px solid var(--success); padding: 15px; border-radius: 4px;">
+                            <strong>14:00 PM</strong> - Mesa de Trabajo: Ciberseguridad Nacional
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Navegación Fluida
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            const titles = {
+                'dashboard': 'Dashboard Operativo',
+                'analisis': 'Inteligencia Artificial Legislativa',
+                'debate': 'Mesa de Debate Virtual',
+                'agenda': 'Agenda Institucional'
+            };
+            document.getElementById('view-title').innerText = titles[viewId];
+        }
+
+        // Simulación IA Pro
+        function runIA() {
+            const result = document.getElementById('ia-result');
+            const btn = event.currentTarget;
+            
+            if(!document.getElementById('ia-input').value.trim()) return alert("Por favor, ingrese un texto.");
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Consultando Red Neuronal...';
+            result.style.display = 'none';
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-brain"></i> Procesar con Red Neuronal';
+                result.style.display = 'block';
+                result.innerHTML = `
+                    <h4><i class="fas fa-check-double text-success"></i> Análisis Finalizado</h4>
+                    <hr style="margin: 10px 0; opacity: 0.2">
+                    <p><strong>Impacto Social:</strong> <span class="text-success">Alto (8.5/10)</span></p>
+                    <p><strong>Riesgo Presupuestario:</strong> Bajo. Se detecta autofinanciación mediante artículo 12.</p>
+                    <p><strong>Predicción:</strong> Probabilidad de aprobación del 82% en primera cámara.</p>
+                `;
+            }, 2000);
+        }
+
+        // Chat Dinámico
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const box = document.getElementById('chat-box');
+            if(!input.value.trim()) return;
+
+            const msg = document.createElement('div');
+            msg.className = 'message-bubble';
+            msg.style.marginLeft = 'auto';
+            msg.style.background = '#e3f2fd';
+            msg.innerHTML = `
+                <small style="color: var(--primary); font-weight: 700;">Usted</small>
+                <p>${input.value}</p>
+            `;
+            box.appendChild(msg);
+            input.value = '';
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // Soporte tecla Enter
+        document.getElementById('msg-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Accesible</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --text-color: #333;
+            --calc-bg: #ffffff;
+            --btn-bg: #e2e2e2;
+            --btn-hover: #d4d4d4;
+            --display-bg: #222;
+            --display-text: #fff;
+            --accent: #007bff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .calculadora {
+            background-color: var(--calc-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .panel-accesibilidad {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #eee;
+            border-radius: 8px;
+            align-items: center;
+        }
+
+        .control-grupo {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            background-color: var(--btn-bg);
+            transition: transform 0.1s;
+        }
+
+        button:hover { background-color: var(--btn-hover); }
+
+        .pantalla-contenedor {
+            background-color: var(--display-bg);
+            color: var(--display-text);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: right;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #pantalla { font-size: 2.5rem; font-weight: bold; }
+
+        .teclado {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .tecla {
+            padding: 20px;
+            font-size: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .tecla.operador { background-color: #fd9a00; color: white; }
+        .tecla.igual { background-color: var(--accent); color: white; grid-column: span 2; }
+        .tecla.limpiar { background-color: #d9534f; color: white; }
+
+        /* Temas */
+        .calculadora[data-tema="alto-contraste"] {
+            --calc-bg: #000; --btn-bg: #fff; --text-color: #000;
+            --display-bg: #000; --display-text: #ff0;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="calculadora" role="application" aria-label="Calculadora Accesible">
+        <div class="panel-accesibilidad" role="toolbar">
+            <div class="control-grupo">
+                <button id="btn-disminuir">A-</button>
+                <span id="tamanoActual">100%</span>
+                <button id="btn-aumentar">A+</button>
+            </div>
+
+            <select id="selector-tema">
+                <option value="normal">Tema Normal</option>
+                <option value="alto-contraste">Alto Contraste</option>
+                <option value="blanco-negro">Blanco/Negro</option>
+            </select>
+
+            <button id="btn-hablar">🔊 Resultado</button>
+            <button id="btn-hablar-operacion">🗣️ Operación</button>
+            <button id="btn-modo-noche">🌙 Modo Noche</button>
+        </div>
+
+        <div class="pantalla-contenedor">
+            <div id="operacion-anterior"></div>
+            <div id="pantalla">0</div>
+        </div>
+
+        <div class="teclado">
+            <button class="tecla limpiar" data-valor="C">C</button>
+            <button class="tecla limpiar" data-valor="CE">CE</button>
+            <button class="tecla" data-valor="%">%</button>
+            <button class="tecla operador" data-valor="/">÷</button>
+            <button class="tecla" data-valor="7">7</button>
+            <button class="tecla" data-valor="8">8</button>
+            <button class="tecla" data-valor="9">9</button>
+            <button class="tecla operador" data-valor="*">×</button>
+            <button class="tecla" data-valor="4">4</button>
+            <button class="tecla" data-valor="5">5</button>
+            <button class="tecla" data-valor="6">6</button>
+            <button class="tecla operador" data-valor="-">−</button>
+            <button class="tecla" data-valor="1">1</button>
+            <button class="tecla" data-valor="2">2</button>
+            <button class="tecla" data-valor="3">3</button>
+            <button class="tecla operador" data-valor="+">+</button>
+            <button class="tecla" data-valor="0" style="grid-column: span 2;">0</button>
+            <button class="tecla" data-valor=".">.</button>
+            <button class="tecla igual" data-valor="=">=</button>
+        </div>
+    </main>
+
+    <script>
+    (function () {
+        const estado = { pantalla: '0', operacionAnterior: '', operador: null, esperandoOperand: false };
+        const elementos = {
+            pantalla: document.getElementById('pantalla'),
+            operacionAnterior: document.getElementById('operacion-anterior'),
+            teclas: document.querySelectorAll('.tecla'),
+            selectorTema: document.getElementById('selector-tema'),
+            btnDisminuir: document.getElementById('btn-disminuir'),
+            btnAumentar: document.getElementById('btn-aumentar'),
+            tamanoActual: document.getElementById('tamanoActual'),
+            btnModoNoche: document.getElementById('btn-modo-noche'),
+            btnHablar: document.getElementById('btn-hablar'),
+            btnHablarOperacion: document.getElementById('btn-hablar-operacion'),
+            calculadora: document.querySelector('.calculadora')
+        };
+
+        let tamanoTexto = 100;
+
+        function actualizarPantalla() {
+            elementos.pantalla.textContent = estado.pantalla;
+            elementos.operacionAnterior.textContent = estado.operacionAnterior;
+        }
+
+        function hablar(texto) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const mensaje = new SpeechSynthesisUtterance(texto);
+                mensaje.lang = 'es-ES';
+                window.speechSynthesis.speak(mensaje);
+            }
+        }
+
+        function manejarClickTecla(valor) {
+            if (!isNaN(valor)) {
+                if (estado.esperandoOperand || estado.pantalla === '0') {
+                    estado.pantalla = valor;
+                    estado.esperandoOperand = false;
+                } else {
+                    estado.pantalla += valor;
+                }
+                hablar(valor);
+            } else if (valor === '.') {
+                if (!estado.pantalla.includes('.')) estado.pantalla += '.';
+            } else if (valor === 'C') {
+                estado.pantalla = '0'; estado.operacionAnterior = ''; estado.operador = null;
+                hablar("Limpiar");
+            } else if (valor === '=') {
+                if (estado.operador) {
+                    const res = eval(estado.operacionAnterior + estado.pantalla);
+                    estado.pantalla = String(res);
+                    estado.operacionAnterior = '';
+                    estado.operador = null;
+                    hablar("Resultado " + res);
+                }
+            } else {
+                estado.operador = valor;
+                estado.operacionAnterior = estado.pantalla + " " + valor + " ";
+                estado.esperandoOperand = true;
+                hablar(valor);
+            }
+            actualizarPantalla();
+        }
+
+        elementos.teclas.forEach(t => t.addEventListener('click', () => manejarClickTecla(t.dataset.valor)));
+        
+        elementos.btnAumentar.addEventListener('click', () => {
+            tamanoTexto += 10;
+            document.documentElement.style.fontSize = tamanoTexto + "%";
+            elementos.tamanoActual.textContent = tamanoTexto + "%";
+        });
+
+        elementos.btnHablar.addEventListener('click', () => hablar("El resultado es " + estado.pantalla));
+        
+        hablar("Calculadora lista");
+    })();
+    </script>
+</body>
+</html>

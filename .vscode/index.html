@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Accesible</title>
+    <style>
+        /* ========================================
+           ESTILOS CSS PARA LA CALCULADORA
+           ======================================== */
+        :root {
+            --bg-color: #f4f4f4;
+            --text-color: #333;
+            --calc-bg: #ffffff;
+            --btn-bg: #e2e2e2;
+            --btn-hover: #d4d4d4;
+            --display-bg: #222;
+            --display-text: #fff;
+            --accent: #007bff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Contenedor Principal */
+        .calculadora {
+            background-color: var(--calc-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Panel de Accesibilidad */
+        .panel-accesibilidad {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #eee;
+            border-radius: 8px;
+            align-items: center;
+        }
+
+        .control-grupo {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            background-color: var(--btn-bg);
+            transition: transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover);
+        }
+
+        button:focus {
+            outline: 3px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* Pantalla */
+        .pantalla-contenedor {
+            background-color: var(--display-bg);
+            color: var(--display-text);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: right;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        #operacion-anterior {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            min-height: 1.2em;
+        }
+
+        #pantalla {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        /* Teclado (Grid) */
+        .teclado {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .tecla {
+            padding: 20px;
+            font-size: 1.5rem;
+            border-radius: 8px;
+            background-color: var(--btn-bg);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tecla.operador {
+            background-color: #fd9a00;
+            color: white;
+        }
+
+        .tecla.igual {
+            background-color: var(--accent);
+            color: white;
+            grid-column: span 2;
+        }
+
+        .tecla.limpiar {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        /* Temas de Alto Contraste (Soporte JS) */
+        .calculadora[data-tema="alto-contraste"] {
+            --calc-bg: #000;
+            --btn-bg: #fff;
+            --text-color: #fff;
+            --display-bg: #000;
+            --display-text: #ff0;
+            --btn-hover: #ccc;
+        }
+
+        .calculadora[data-tema="blanco-negro"] {
+            --calc-bg: #fff;
+            --btn-bg: #000;
+            --text-color: #fff;
+            --display-bg: #000;
+            --display-text: #fff;
+            --btn-hover: #333;
+        }
+        
+        .calculadora[data-tema="azul-blanco"] {
+            --calc-bg: #e6f2ff;
+            --btn-bg: #0056b3;
+            --text-color: #fff;
+            --display-bg: #003366;
+            --display-text: #fff;
+            --btn-hover: #004494;
+        }
+
+        /* Efecto visual para voz */
+        .vocal-active {
+            border: 3px solid yellow !important;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Estructura HTML -->
+    <main class="calculadora" role="application" aria-label="Calculadora Accesible">
+        
+        <!-- Panel de Herramientas de Accesibilidad -->
+        <div class="panel-accesibilidad" role="toolbar" aria-label="Herramientas de accesibilidad">
+            
+            <!-- Tamaño de Fuente -->
+            <div class="control-grupo">
+                <button id="btn-disminuir" aria-label="Disminuir tamaño de texto">A-</button>
+                <!-- CORRECCIÓN 1: Mantenemos el ID consistente -->
+                <span id="tamanoActual" aria-live="polite">100%</span>
+                <button id="btn-aumentar" aria-label="Aumentar tamaño de texto">A+</button>
+            </div>
+
+            <!-- Selector de Tema -->
+            <div class="control-grupo">
+                <label for="selector-tema" class="sr-only">Seleccionar tema:</label>
+                <select id="selector-tema">
+                    <option value="normal">Tema Normal</option>
+                    <option value="alto-contraste">Alto Contraste</option>
+                    <option value="blanco-negro">Blanco/Negro</option>
+                    <option value="azul-blanco">Azul/Blanco</option>
+                </select>
+            </div>
+
+            <!-- Botones de Voz y Modo Noche -->
+            <button id="btn-hablar" aria-label="Leer resultado actual">🔊 Resultado</button>
+            <button id="btn-hablar-operacion" aria-label="Leer operación actual">🗣️ Operación</button>
+            <!-- CORRECCIÓN 2: Iniciamos aria-pressed en "false" porque la página empieza clara -->
+            <button id="btn-modo-noche" aria-pressed="false">🌙 Modo Noche</button>
+        </div>
+
+        <!-- Pantalla -->
+        <div class="pantalla-contenedor">
+            <div id="operacion-anterior" aria-live="polite"></div>
+            <div id="pantalla" role="status" aria-live="assertive" aria-atomic="true" tabindex="0">0</div>
+        </div>
+
+        <!-- Teclado -->
+        <div class="teclado" role="group" aria-label="Teclado de calculadora">
+            <!-- Fila 1 -->
+            <button class="tecla limpiar" data-valor="C" aria-label="Borrar todo">C</button>
+            <button class="tecla limpiar" data-valor="CE" aria-label="Borrar último">CE</button>
+            <button class="tecla" data-valor="%" aria-label="Porcentaje">%</button>
+            <button class="tecla operador" data-valor="/" aria-label="Dividir">÷</button>
+
+            <!-- Fila 2 -->
+            <button class="tecla" data-valor="7">7</button>
+            <button class="tecla" data-valor="8">8</button>
+            <button class="tecla" data-valor="9">9</button>
+            <button class="tecla operador" data-valor="*" aria-label="Multiplicar">×</button>
+
+            <!-- Fila 3 -->
+            <button class="tecla" data-valor="4">4</button>
+            <button class="tecla" data-valor="5">5</button>
+            <button class="tecla" data-valor="6">6</button>
+            <button class="tecla operador" data-valor="-" aria-label="Restar">−</button>
+
+            <!-- Fila 4 -->
+            <button class="tecla" data-valor="1">1</button>
+            <button class="tecla" data-valor="2">2</button>
+            <button class="tecla" data-valor="3">3</button>
+            <button class="tecla operador" data-valor="+" aria-label="Sumar">+</button>
+
+            <!-- Fila 5 -->
+            <button class="tecla" data-valor="0" style="grid-column: span 2;">0</button>
+            <button class="tecla" data-valor="." aria-label="Punto decimal">.</button>
+            <button class="tecla igual" data-valor="=" aria-label="Calcular resultado">=</button>
+        </div>
+    </main>
+
+    <!-- SCRIPT DE JAVASCRIPT CORREGIDO -->
+    <script>
+    /**
+     * CALCULADORA ACCESIBLE
+     * Script para calculadora diseñada para personas con problemas de visión
+     * Compatible con lectores de pantalla y teclado
+     */
+
+    (function () {
+        'use strict';
+
+        // ========================================
+        // ESTADO DE LA CALCULADORA
+        // ========================================
+        const estado = {
+            pantalla: '0',
+            operacionAnterior: '',
+            operador: null,
+            esperandoOperand: false,
+            memoria: 0,
+            historial: []
+        };
+
+        // ========================================
+        // ELEMENTOS DEL DOM
+        // ========================================
+        const elementos = {
+            pantalla: document.getElementById('pantalla'),
+            operacionAnterior: document.getElementById('operacion-anterior'),
+            teclas: document.querySelectorAll('.tecla'),
+            selectorTema: document.getElementById('selector-tema'),
+            btnDisminuir: document.getElementById('btn-disminuir'),
+            btnAumentar: document.getElementById('btn-aumentar'),
+            // CORRECCIÓN APLICADA: ID correcto sin guion
+            tamanoActual: document.getElementById('tamanoActual'),
+            btnModoNoche: document.getElementById('btn-modo-noche'),
+            btnHablar: document.getElementById('btn-hablar'),
+            btnHablarOperacion: document.getElementById('btn-hablar-operacion'),
+            calculadora: document.querySelector('.calculadora')
+        };
+
+        // ========================================
+        // CONFIGURACIÓN INICIAL
+        // ========================================
+        let tamanoTexto = 100;
+        const pasoTamano = 10;
+        const tamanoMinimo = 80;
+        const tamanoMaximo = 200;
+
+        // ========================================
+        // FUNCIONES DE ACTUALIZACIÓN DE PANTALLA
+        // ========================================
+        function actualizarPantalla() {
+            elementos.pantalla.textContent = estado.pantalla;
+            elementos.operacionAnterior.textContent = estado.operacionAnterior;
+            anunciarPantalla();
+        }
+
+        function anunciarPantalla() {
+            elementos.pantalla.setAttribute('aria-label', `Resultado: ${estado.pantalla}`);
+        }
+
+        // ========================================
+        // FUNCIONES DE CÁLCULO
+        // ========================================
+        function agregarNumero(numero) {
+            if (estado.esperandoOperand) {
+                estado.pantalla = numero;
+                estado.esperandoOperand = false;
+            } else {
+                estado.pantalla = estado.pantalla === '0' ? numero : estado.pantalla + numero;
+            }
+
+            if (estado.pantalla.length > 15) {
+                estado.pantalla = estado.pantalla.substring(0, 15);
+            }
+
+            actualizarPantalla();
+        }
+
+        function agregarDecimal() {
+            if (estado.esperandoOperand) {
+                estado.pantalla = '0.';
+                estado.esperandoOperand = false;
+                actualizarPantalla();
+                return;
+            }
+
+            if (!estado.pantalla.includes('.')) {
+                estado.pantalla += '.';
+                actualizarPantalla();
+            }
+        }
+
+        function agregarPorcentaje() {
+            const numero = parseFloat(estado.pantalla);
+            const resultado = numero / 100;
+            estado.pantalla = formatearNumero(resultado);
+            actualizarPantalla();
+            hablar(`Porcentaje: ${estado.pantalla}`);
+        }
+
+        function formatearNumero(numero) {
+            if (isNaN(numero) || !isFinite(numero)) {
+                return 'Error';
+            }
+
+            const resultado = numero.toString();
+            if (resultado.length > 15) {
+                return numero.toPrecision(10);
+            }
+            return resultado;
+        }
+
+        function operacionBinaria(proximoOperador) {
+            const entradaPantalla = parseFloat(estado.pantalla);
+
+            if (estado.operador && !estado.esperandoOperand) {
+                const resultado = calcular(
+                    estado.operador,
+                    estado.operacionAnterior,
+                    entradaPantalla
+                );
+
+                if (resultado === 'Error') {
+                    limpiarTodo();
+                    hablar('Error de cálculo');
+                    return;
+                }
+
+                estado.pantalla = formatearNumero(resultado);
+                estado.operacionAnterior = `${estado.pantalla} ${proximoOperador}`;
+            } else {
+                estado.operacionAnterior = `${entradaPantalla} ${proximoOperador}`;
+            }
+
+            estado.operador = proximoOperador;
+            estado.esperandoOperand = true;
+            actualizarPantalla();
+        }
+
+        function calcular(operador, operando1, operando2) {
+            const num1 = parseFloat(operando1);
+            const num2 = parseFloat(operando2);
+
+            if (isNaN(num1) || isNaN(num2)) {
+                return operando1;
+            }
+
+            switch (operador) {
+                case '+':
+                    return num1 + num2;
+                case '-':
+                case '−':
+                    return num1 - num2;
+                case '*':
+                case '×':
+                    return num1 * num2;
+                case '/':
+                case '÷':
+                    if (num2 === 0) {
+                        return 'Error';
+                    }
+                    return num1 / num2;
+                default:
+                    return operando2;
+            }
+        }
+
+        function calcularResultado() {
+            if (!estado.operador) {
+                return;
+            }
+            
+            const entradaPantalla = parseFloat(estado.pantalla);
+            const numAnterior = parseFloat(estado.operacionAnterior);
+            const expresionOriginal = `${estado.operacionAnterior} ${entradaPantalla} =`;
+
+            const resultado = calcular(
+                estado.operador,
+                numAnterior,
+                entradaPantalla
+            );
+
+            if (resultado === 'Error') {
+                estado.pantalla = 'Error';
+                estado.operacionAnterior = '';
+                estado.operador = null;
+                hablar('Error: no se puede dividir por cero');
+            } else {
+                estado.historial.push({
+                    expresion: expresionOriginal,
+                    resultado: resultado
+                });
+
+                estado.pantalla = formatearNumero(resultado);
+                estado.operacionAnterior = '';
+                estado.operador = null;
+
+                hablar(`Resultado: ${estado.pantalla}`);
+            }
+
+            estado.esperandoOperand = false;
+            actualizarPantalla();
+        }
+
+        function limpiarTodo() {
+            estado.pantalla = '0';
+            estado.operacionAnterior = '';
+            estado.operador = null;
+            estado.esperandoOperand = false;
+            actualizarPantalla();
+            hablar('Calculadora limpiada');
+        }
+
+        function borrarUltimo() {
+            if (estado.esperandoOperand) {
+                return;
+            }
+
+            if (estado.pantalla.length === 1 ||
+                (estado.pantalla.length === 2 && estado.pantalla.startsWith('-'))) {
+                estado.pantalla = '0';
+            } else {
+                estado.pantalla = estado.pantalla.slice(0, -1);
+            }
+
+            actualizarPantalla();
+        }
+
+        function cambiarSigno() {
+            const numero = parseFloat(estado.pantalla);
+            estado.pantalla = formatearNumero(-numero);
+            actualizarPantalla();
+        }
+
+        // ========================================
+        // FUNCIONES DE VOZ (SÍNTESIS DE VOZ)
+        // ========================================
+        function hablar(texto) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const mensaje = new SpeechSynthesisUtterance(texto);
+                mensaje.lang = 'es-ES';
+                mensaje.rate = 1;
+                mensaje.pitch = 1;
+
+                const voces = window.speechSynthesis.getVoices();
+                const vozEspanol = voces.find(v => v.lang.includes('es'));
+                if (vozEspanol) {
+                    mensaje.voice = vozEspanol;
+                }
+
+                window.speechSynthesis.speak(mensaje);
+            }
+        }
+
+        function hablarResultado() {
+            const numero = estado.pantalla;
+            const numeroHabla = numero.replace(/\./g, ' punto ').replace(/,/g, ' coma ');
+            hablar(`El resultado es: ${numeroHabla}`);
+
+            elementos.pantalla.classList.add('vocal-active');
+            setTimeout(() => {
+                elementos.pantalla.classList.remove('vocal-active');
+            }, 500);
+        }
+
+        function hablarOperacion() {
+            const operacion = estado.operacionAnterior || estado.pantalla;
+
+            if (estado.operacionAnterior) {
+                hablar(`Operación actual: ${estado.operacionAnterior}`);
+            } else {
+                hablar(`Número actual: ${estado.pantalla}`);
+            }
+        }
+
+        // ========================================
+        // FUNCIONES DE ACCESIBILIDAD
+        // ========================================
+
+        function aumentarTamano() {
+            if (tamanoTexto < tamanoMaximo) {
+                tamanoTexto += pasoTamano;
+                aplicarTamanoTexto();
+            }
+        }
+
+        function disminuirTamano() {
+            if (tamanoTexto > tamanoMinimo) {
+                tamanoTexto -= pasoTamano;
+                aplicarTamanoTexto();
+            }
+        }
+
+        function aplicarTamanoTexto() {
+            document.documentElement.style.fontSize = `${tamanoTexto}%`;
+            elementos.tamanoActual.textContent = `${tamanoTexto}%`;
+            elementos.tamanoActual.setAttribute('aria-label', `Tamaño de texto actual: ${tamanoTexto}%`);
+        }
+
+        function cambiarTema(tema) {
+            elementos.calculadora.setAttribute('data-tema', tema);
+            localStorage.setItem('temaCalculadora', tema);
+
+            const nombresTema = {
+                'alto-contraste': 'Alto Contraste',
+                'blanco-negro': 'Blanco sobre Negro',
+                'azul-blanco': 'Azul sobre Blanco'
+            };
+            
+            const nombreHabla = nombresTema[tema] || 'Normal';
+            hablar(`Tema cambiado a ${nombreHabla}`);
+        }
+
+        function alternarModoNoche() {
+            const cuerpo = document.body;
+            const boton = elementos.btnModoNoche;
+            // Leemos el estado actual del botón
+            const esModoNoche = boton.getAttribute('aria-pressed') === 'true';
+
+            if (esModoNoche) {
+                // Si estaba en modo noche, pasamos a modo claro
+                cuerpo.style.backgroundColor = '#ffffff';
+                cuerpo.style.color = '#003366';
+                boton.textContent = '🌙 Modo Noche';
+                boton.setAttribute('aria-pressed', 'false');
+                hablar('Modo claro activado');
+            } else {
+                // Si estaba en modo claro, pasamos a modo noche
+                cuerpo.style.backgroundColor = '#000000';
+                cuerpo.style.color = '#FFD700';
+                boton.textContent = '☀️ Modo Claro';
+                boton.setAttribute('aria-pressed', 'true');
+                hablar('Modo oscuro activado');
+            }
+        }
+
+        // ========================================
+        // MANEJO DE EVENTOS
+        // ========================================
+
+        function manejarClickTecla(valor) {
+            const tecla = document.querySelector(`[data-valor="${valor}"]`);
+            if (tecla) {
+                tecla.classList.add('pulsando');
+                setTimeout(() => tecla.classList.remove('pulsando'), 100);
+            }
+
+            switch (valor) {
+                case '0': case '1': case '2': case '3': case '4':
+                case '5': case '6': case '7': case '8': case '9':
+                    agregarNumero(valor);
+                    hablar(valor === '0' ? 'cero' : valor);
+                    break;
+                case '.':
+                    agregarDecimal();
+                    hablar('punto');
+                    break;
+                case '+': case '-': case '*': case '/':
+                case '−': case '×': case '÷':
+                    operacionBinaria(valor);
+                    break;
+                case '%':
+                    agregarPorcentaje();
+                    break;
+                case '=':
+                    calcularResultado();
+                    break;
+                case 'C':
+                    limpiarTodo();
+                    break;
+                case 'CE':
+                    borrarUltimo();
+                    break;
+            }
+        }
+
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        function init() {
+            const temaGuardado = localStorage.getItem('temaCalculadora');
+            if (temaGuardado) {
+                elementos.calculadora.setAttribute('data-tema', temaGuardado);
+                elementos.selectorTema.value = temaGuardado;
+            }
+
+            const estiloAnimacion = document.createElement('style');
+            estiloAnimacion.textContent = `
+                .tecla.pulsando {
+                    transform: scale(0.9);
+                    filter: brightness(1.3);
+                }
+            `;
+            document.head.appendChild(estiloAnimacion);
+
+            elementos.teclas.forEach(tecla => {
+                tecla.addEventListener('click', () => {
+                    const valor = tecla.getAttribute('data-valor');
+                    manejarClickTecla(valor);
+                });
+
+                tecla.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        tecla.click();
+                    }
+                });
+            });
+
+            elementos.btnAumentar.addEventListener('click', aumentarTamano);
+            elementos.btnDisminuir.addEventListener('click', disminuirTamano);
+            elementos.selectorTema.addEventListener('change', (e) => {
+                cambiarTema(e.target.value);
+            });
+            elementos.btnModoNoche.addEventListener('click', alternarModoNoche);
+
+            elementos.btnHablar.addEventListener('click', hablarResultado);
+            elementos.btnHablarOperacion.addEventListener('click', hablarOperacion);
+
+            document.addEventListener('keydown', manejarTeclado);
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+                window.speechSynthesis.onvoiceschanged = () => {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+
+            setTimeout(() => {
+                hablar('Calculadora accesible lista. Use los botones o el teclado para calcular.');
+            }, 500);
+        }
+
+        // ========================================
+        // MANEJO COMPLETO DE TECLADO
+        // ========================================
+        function manejarTeclado(e) {
+            const tecla = e.key;
+
+            if (/^[0-9]$/.test(tecla)) {
+                agregarNumero(tecla);
+                return;
+            }
+
+            switch (tecla) {
+                case '+': case '-': case '*': case '/':
+                    operacionBinaria(tecla);
+                    break;
+                case '.': case ',':
+                    e.preventDefault();
+                    agregarDecimal();
+                    break;
+                case 'Enter': case '=':
+                    e.preventDefault();
+                    calcularResultado();
+                    break;
+                case 'Escape': case 'c': case 'C':
+                    e.preventDefault();
+                    limpiarTodo();
+                    break;
+                case 'Backspace':
+                    e.preventDefault();
+                    borrarUltimo();
+                    break;
+                case '%':
+                    e.preventDefault();
+                    agregarPorcentaje();
+                    break;
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
+    </script>
+</body>
+</html>
